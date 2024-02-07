@@ -34,27 +34,29 @@ app.use(bodyParser.json());
 
 app.get("/filteredimage", async (req, res) => {
   try {
-    // grab the url
-    const rawURL = req.query.image_url;
-    const url = rawURL.substring(2, rawURL.length - 2);
+    // unpack the url
+    const { image_url } = req.query;
+
+    // check to make sure image_url query provided
+    if (!image_url) {
+      return res.status(400).send("<h1>No image_url Query Provided...</h1>");
+    }
 
     // validate the url
-    if (validURL(url)) {
+    if (validURL(image_url)) {
       // process image which returns a path to image in local storage
-      const imgPath = await filterImageFromURL(url);
+      const imgPath = await filterImageFromURL(image_url);
       console.log(`Image Path: ${imgPath}`);
       res.status(200).sendFile(imgPath, async () => {
         await deleteLocalFiles([imgPath]);
         console.log(`File: ${imgPath} successfully deleted...`);
       });
+    } else {
+      return res.status(400).send("<h1>Invalid URL...</h1>");
     }
   } catch {
     // likely a bad url
-    res
-      .status(500)
-      .send(
-        "<h1>Sorry, unable to process your request.</h1><p>Please check to make sure you entered a proper URL for the image.  Such as /filteredimage?image_url={{https://picsum.photos/500/500}}</p>"
-      );
+    return res.status(500).send("<h1>Unknown Error...</h1>");
   }
 });
 
