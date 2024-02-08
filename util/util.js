@@ -1,5 +1,6 @@
 import fs from "fs";
 import Jimp from "jimp";
+import { CLIENT_RENEG_LIMIT } from "tls";
 
 // filterImageFromURL
 // helper function to download, filter, and save the filtered image locally
@@ -14,6 +15,7 @@ export async function filterImageFromURL(inputURL) {
       const photo = await Jimp.read(inputURL);
       const outpath =
         "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
+      console.log(outpath);
       await photo
         .resize(256, 256) // resize
         .quality(60) // set JPEG quality
@@ -22,7 +24,7 @@ export async function filterImageFromURL(inputURL) {
           resolve(outpath);
         });
     } catch (error) {
-      reject(error);
+      reject(`filterImageFromURL: ${error}`);
     }
   });
 }

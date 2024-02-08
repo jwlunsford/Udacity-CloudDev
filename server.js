@@ -36,27 +36,27 @@ app.get("/filteredimage", async (req, res) => {
   try {
     // unpack the url
     const { image_url } = req.query;
+    console.log(image_url);
 
     // check to make sure image_url query provided
     if (!image_url) {
-      return res.status(400).send("<h1>No image_url Query Provided...</h1>");
+      res.status(400).send("<h1>No image_url Query Provided...</h1>");
     }
 
     // validate the url
     if (validURL(image_url)) {
       // process image which returns a path to image in local storage
       const imgPath = await filterImageFromURL(image_url);
-      console.log(`Image Path: ${imgPath}`);
       res.status(200).sendFile(imgPath, async () => {
         await deleteLocalFiles([imgPath]);
         console.log(`File: ${imgPath} successfully deleted...`);
       });
     } else {
-      return res.status(400).send("<h1>Invalid URL...</h1>");
+      res.status(400).send("<h1>Invalid URL...</h1>");
     }
-  } catch {
+  } catch (e) {
     // likely a bad url
-    return res.status(500).send("<h1>Unknown Error...</h1>");
+    console.log(`Unknown Error...${e}`);
   }
 });
 
