@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import { filterImageFromURL, deleteLocalFiles, validURL } from "./util/util.js";
+import { filterImageFromURL, deleteLocalFiles } from "./util/util.js";
 
 // load env vars
 dotenv.config({ path: "./config/config.env" });
@@ -33,30 +33,29 @@ app.use(bodyParser.json());
 //! END @TODO1
 
 app.get("/filteredimage", async (req, res) => {
+  // unpack the url
+  const { image_url } = req.query;
+  console.log(image_url);
+
+  // check to make sure image_url query provided
+  if (!image_url) {
+    return res.status(400).send("<h1>No image_url Query Provided...</h1>");
+  }
+
   try {
-    // unpack the url
-    const { image_url } = req.query;
-    console.log(image_url);
-
-    // check to make sure image_url query provided
-    if (!image_url) {
-      res.status(400).send("<h1>No image_url Query Provided...</h1>");
-    }
-
-    // validate the url
-    if (validURL(image_url)) {
-      // process image which returns a path to image in local storage
-      const imgPath = await filterImageFromURL(image_url);
-      res.status(200).sendFile(imgPath, async () => {
-        await deleteLocalFiles([imgPath]);
+    // process image which returns a path to image in local storage
+    const imgPath = await filterImageFromURL(image_url);
+    res.status(200).sendFile(imgPath, (err) => {
+      if (err) {
+        return res.status(400).send(`<h1>Bad Request...</h1><p>${err}</p>`);
+      } else {
+        deleteLocalFiles([imgPath]);
         console.log(`File: ${imgPath} successfully deleted...`);
-      });
-    } else {
-      res.status(400).send("<h1>Invalid URL...</h1>");
-    }
-  } catch (e) {
-    // likely a bad url
-    console.log(`Unknown Error...${e}`);
+      }
+    });
+  } catch (err) {
+    // a content issue
+    return res.status(422).send(`<h1>Content Error...</h1><p>${err}</p>`);
   }
 });
 

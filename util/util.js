@@ -15,8 +15,7 @@ export async function filterImageFromURL(inputURL) {
       const photo = await Jimp.read(inputURL);
       const outpath =
         "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
-      console.log(outpath);
-      await photo
+      photo
         .resize(256, 256) // resize
         .quality(60) // set JPEG quality
         .greyscale() // set greyscale
@@ -24,7 +23,7 @@ export async function filterImageFromURL(inputURL) {
           resolve(outpath);
         });
     } catch (error) {
-      reject(`filterImageFromURL: ${error}`);
+      reject(error);
     }
   });
 }
@@ -37,16 +36,5 @@ export async function filterImageFromURL(inputURL) {
 export async function deleteLocalFiles(files) {
   for (let file of files) {
     fs.unlinkSync(file);
-  }
-}
-
-// validate the URL string
-export function validURL(url) {
-  try {
-    const checkURL = new URL(url);
-    return true;
-  } catch (e) {
-    console.log(e);
-    return false;
   }
 }
